@@ -1,41 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
   <meta charset="utf-8" />
-  <title>Physics Demos for Kids</title>
+  <title>Physics Playground for Kids</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: system-ui, sans-serif;
-      background: #f7f7f7;
-      padding: 40px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f9fb;
+      color: #24333e;
+      margin: 0;
+      padding: 32px 20px 60px;
+      line-height: 1.7;
     }
-    h1 { margin-bottom: 24px; }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.9rem;
+      margin-bottom: 12px;
+    }
+    .intro {
+      font-size: 1.05rem;
+      color: #445a6a;
+      margin-bottom: 40px;
+    }
     .card {
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 24px 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
-    a {
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+    .question {
+      font-weight: 600;
+      color: #1a4a5c;
+      margin: 12px 0;
+    }
+    .meaning {
+      color: #334e5c;
+      margin-bottom: 16px;
+    }
+    a.demo-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-weight: 600;
       text-decoration: none;
-      font-size: 1.1rem;
-      color: #3366cc;
+      color: #1565c0;
+    }
+    a.demo-link:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      margin-top: 48px;
+      font-size: 0.95rem;
+      color: #607380;
     }
   </style>
 </head>
+
 <body>
-  <h1>🧪 Physics Demos for Kids</h1>
+  <div class="container">
+    <h1>🧪 Physics Playground</h1>
 
-  <div class="card">
-    <a href="./car/">🚗 Car on a Slope – Friction & Motion</a>
-    <p>How slope and friction change motion.</p>
-  </div>
+    <p class="intro">
+      这些互动小实验不是用来“讲知识点”的。  
+      它们的目的，是帮助孩子修正一些<strong>非常常见、但很顽固的直觉错误</strong>。  
+      当孩子开始问「为什么会这样？」时，真正的学习才开始。
+    </p>
 
-  <div class="card">
-    <a href="./duck/">🦆 Floating Duck – Buoyancy & Density</a>
-    <p>Why heavy things can float.</p>
+    <!-- Demo 1 -->
+    <div class="card">
+      <h2>🚗 Car on a Slope：斜坡与摩擦</h2>
+
+      <p class="question">
+        孩子常见的直觉：<br/>
+        「车开始动，是因为我推了它。」
+      </p>
+
+      <p class="meaning">
+        这个实验让孩子看到：  
+        即使你不“推”，位置本身就包含能量。  
+        斜坡角度、摩擦大小，会决定车是否能启动、跑多远。
+      </p>
+
+      <p class="meaning">
+        <strong>教育意义：</strong><br/>
+        帮助孩子理解「状态」和「条件」，而不是只盯着“有没有力”。  
+        这是以后理解能量、系统和因果关系的基础。
+      </p>
+
+      <a class="demo-link" href="./car/">👉 打开实验</a>
+    </div>
+
+    <!-- Demo 2 -->
+    <div class="card">
+      <h2>🦆 Floating Duck：浮力与密度</h2>
+
+      <p class="question">
+        几乎所有孩子都会这么想：<br/>
+        「重的东西一定会沉。」
+      </p>
+
+      <p class="meaning">
+        这个实验允许孩子自由调整“重量”和“体积”，  
+        亲眼看到：<strong>大而轻的东西会浮，小而重的东西会沉。</strong>
+      </p>
+
+      <p class="meaning">
+        <strong>教育意义：</strong><br/>
+        孩子会第一次真正理解“密度”这个概念，  
+        而不是死记一个公式。  
+        这对以后理解材料、气体、甚至天文学都非常重要。
+      </p>
+
+      <a class="demo-link" href="./duck/">👉 打开实验</a>
+    </div>
+
+    <!-- Demo 3 -->
+    <div class="card">
+      <h2>🎯 Projectile Playground：抛体运动</h2>
+
+      <p class="question">
+        很多孩子以为：<br/>
+        「扔得越用力，东西就一定飞得越远。」
+      </p>
+
+      <p class="meaning">
+        这个实验让孩子像“发射”一样抛出物体，  
+        调整角度、速度和重力，观察完整的飞行轨迹。
+      </p>
+
+      <p class="meaning">
+        <strong>教育意义：</strong><br/>
+        孩子会发现：<br/>
+        同样的速度，不同的角度，结果完全不同。  
+        这正是物理中“分解运动”和“模型思维”的起点。
+      </p>
+
+      <a class="demo-link" href="./projectile/">👉 打开实验</a>
+    </div>
+
+    <div class="footer">
+      💡 建议使用方式：<br/>
+      不需要先讲原理。  
+      让孩子先玩，先试错。  
+      当他们开始问「为什么会这样？」时，再一起讨论。
+    </div>
   </div>
 </body>
 </html>
-

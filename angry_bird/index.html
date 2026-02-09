@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projectile Playground 🎯: Throw It! (抛体游乐场：扔出去！)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 40%, #90EE90 100%);
+      min-height: 100vh;
+      color: #1a4a2c;
+    }
+    h1 {
+      text-align: center;
+      font-size: clamp(1.4rem, 4vw, 1.9rem);
+      margin: 0 0 6px 0;
+      color: #0d3d1a;
+    }
+    .subtitle { text-align: center; font-size: 0.9rem; margin-bottom: 12px; opacity: 0.9; }
+    .demo-area {
+      max-width: 640px;
+      margin: 0 auto 16px;
+      background: rgba(255,255,255,0.85);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    #scene {
+      display: block;
+      width: 100%;
+      height: 260px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 55%, #228B22 75%, #1a5c1a 100%);
+      touch-action: none;
+    }
+    .feedback {
+      text-align: center;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 700;
+      min-height: 2.2em;
+      margin: 10px 0;
+      color: #0d3d1a;
+    }
+    .controls {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .control-row label {
+      flex: 0 0 180px;
+      font-size: 0.95rem;
+      color: #1a4a2c;
+    }
+    input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #c8e6c9;
+      border-radius: 14px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #FFD54F, #FFB74D);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #FFD54F, #FFB74D);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+    .checkbox-row input { width: 22px; height: 22px; cursor: pointer; }
+    .checkbox-row label { font-size: 0.95rem; cursor: pointer; color: #1a4a2c; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    button {
+      min-height: 48px;
+      min-width: 100px;
+      padding: 12px 20px;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    button:active { transform: scale(0.97); }
+    #launchBtn {
+      background: linear-gradient(145deg, #FF9800, #F57C00);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245,124,0,0.45);
+      font-size: 1.15rem;
+    }
+    #launchBtn:hover { box-shadow: 0 6px 18px rgba(245,124,0,0.55); }
+    .preset {
+      background: #fff;
+      color: #1a4a2c;
+      border: 2px solid #81C784;
+    }
+    .preset:hover { background: #E8F5E9; }
+    #infoPanel {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(232,245,233,0.9);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+    #infoPanel .item { font-weight: 600; color: #1a4a2c; }
+    #infoPanel .value { color: #2E7D32; }
+    .why-hint {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #558B2F;
+      font-style: italic;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Projectile Playground 🎯: Throw It! (抛体游乐场：扔出去！)</h1>
+  <p class="subtitle">Launch something and watch it fly! (发射物体，看它飞！)</p>
+
+  <div class="demo-area">
+    <canvas id="scene" width="608" height="260"></canvas>
+    <p class="feedback" id="feedback">Ready to launch! (准备发射！)</p>
+
+    <div class="controls">
+      <div class="control-row">
+        <label for="speed">Launch speed 发射速度 (m/s):</label>
+        <input type="range" id="speed" min="5" max="30" value="18" step="0.5">
+        <span id="speedVal">18</span>
+      </div>
+      <div class="control-row">
+        <label for="angle">Launch angle 发射角 (°):</label>
+        <input type="range" id="angle" min="0" max="90" value="45" step="1">
+        <span id="angleVal">45</span>
+      </div>
+      <div class="control-row">
+        <label for="gravity">Gravity 重力 (m/s²):</label>
+        <input type="range" id="gravity" min="1" max="20" value="9.8" step="0.1">
+        <span id="gravityVal">9.8</span>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="airResist" aria-label="Air resistance">
+        <label for="airResist">Air resistance ON / OFF (空气阻力 开/关)</label>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button id="launchBtn">LAUNCH! 🚀 (发射！)</button>
+      <button class="preset" id="presetLow">Low & Fast (低平快)</button>
+      <button class="preset" id="presetHigh">High & Slow (高而慢)</button>
+      <button class="preset" id="presetMoon">Moon Gravity 🌙 (月球重力)</button>
+    </div>
+
+    <div id="infoPanel">
+      <span class="item">Range 射程:</span><span class="value" id="rangeVal">—</span>
+      <span class="item">Time in air 滞空时间:</span><span class="value" id="timeVal">—</span>
+      <span class="item">Max height 最大高度:</span><span class="value" id="heightVal">—</span>
+    </div>
+    <p class="why-hint" id="whyHint" style="display:none;">Same speed, different angle → different range! (相同速度，不同角度 → 射程不同！)</p>
+  </div>
+
+  <script>
+    (function() {
+      const canvas = document.getElementById('scene');
+      const ctx = canvas.getContext('2d');
+      const VISUAL_TIME_SCALE = 0.4;
+      const DRAG_COEFF = 0.08;
+      const DT = 0.016;
+
+      let world = {
+        scale: 1,
+        originX: 0,
+        originY: 0,
+        groundY: 0
+      };
+
+      let state = {
+        speed: 18,
+        angle: 45,
+        gravity: 9.8,
+        airResist: false,
+        flying: false,
+        t: 0,
+        x: 0, y: 0, vx: 0, vy: 0,
+        path: [],
+        ghostPath: [],
+        range: 0,
+        timeInAir: 0,
+        maxHeight: 0,
+        landed: false,
+        dustParticles: [],
+        dustTime: 0,
+        showWhyHint: false
+      };
+
+      function resize() {
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        world.originX = w * 0.08;
+        world.originY = h * 0.75;
+        world.groundY = h * 0.82;
+        world.scale = Math.min(w / 80, h / 35);
+      }
+
+      function toCanvas(x, y) {
+        return {
+          cx: world.originX + x * world.scale,
+          cy: world.groundY - y * world.scale
+        };
+      }
+
+      function fromCanvas(cx, cy) {
+        return {
+          x: (cx - world.originX) / world.scale,
+          y: (world.groundY - cy) / world.scale
+        };
+      }
+
+      function integrateNoAir(v0, thetaRad, g, t) {
+        const vx0 = v0 * Math.cos(thetaRad);
+        const vy0 = v0 * Math.sin(thetaRad);
+        return {
+          x: vx0 * t,
+          y: vy0 * t - 0.5 * g * t * t,
+          vx: vx0,
+          vy: vy0 - g * t
+        };
+      }
+
+      function simulateWithAir(v0, thetaRad, g, k, tMax, step) {
+        const pts = [];
+        let x = 0, y = 0, vx = v0 * Math.cos(thetaRad), vy = v0 * Math.sin(thetaRad);
+        let t = 0;
+        while (t < tMax && y >= -0.1) {
+          pts.push({ x, y, t });
+          const v = Math.sqrt(vx * vx + vy * vy) || 0.001;
+          const ax = -k * vx;
+          const ay = -g - k * vy;
+          vx += ax * step;
+          vy += ay * step;
+          x += vx * step;
+          y += vy * step;
+          t += step;
+        }
+        if (y < 0 && pts.length >= 2) {
+          const last = pts[pts.length - 1];
+          const prev = pts[pts.length - 2];
+          const frac = last.y >= 0 ? 0 : last.y / (last.y - prev.y);
+          const landT = prev.t + frac * (last.t - prev.t);
+          const landX = prev.x + frac * (last.x - prev.x);
+          pts.push({ x: landX, y: 0, t: landT });
+        }
+        return pts;
+      }
+
+      function simulateNoAir(v0, thetaRad, g, step) {
+        const vx0 = v0 * Math.cos(thetaRad);
+        const vy0 = v0 * Math.sin(thetaRad);
+        const tLand = 2 * vy0 / g;
+        const pts = [];
+        for (let t = 0; t <= tLand + 0.5; t += step) {
+          const p = integrateNoAir(v0, thetaRad, g, t);
+          if (p.y < -0.05) break;
+          pts.push({ x: p.x, y: p.y, t });
+        }
+        if (pts.length && pts[pts.length - 1].y > 0) {
+          const tHit = (vy0 + Math.sqrt(vy0 * vy0 + 2 * g * pts[pts.length - 1].y)) / g;
+          const xHit = vx0 * tHit;
+          pts.push({ x: xHit, y: 0, t: tHit });
+        }
+        return pts;
+      }
+
+      function launch() {
+        if (state.flying) return;
+        state.ghostPath = state.path.length ? state.path.slice() : [];
+        state.path = [];
+        state.flying = true;
+        state.landed = false;
+        state.dustParticles = [];
+        state.dustTime = 0;
+        state.showWhyHint = false;
+        state.t = 0;
+        const thetaRad = (state.angle * Math.PI) / 180;
+        const v0 = state.speed;
+        const g = state.gravity;
+        const step = 0.02;
+        state.path = state.airResist
+          ? simulateWithAir(v0, thetaRad, g, DRAG_COEFF, 60, step)
+          : simulateNoAir(v0, thetaRad, g, step);
+        state.range = state.path.length ? state.path[state.path.length - 1].x : 0;
+        state.timeInAir = state.path.length ? state.path[state.path.length - 1].t : 0;
+        state.maxHeight = state.path.length ? Math.max(...state.path.map(p => p.y)) : 0;
+        document.getElementById('rangeVal').textContent = state.range.toFixed(1) + ' m';
+        document.getElementById('timeVal').textContent = state.timeInAir.toFixed(2) + ' s';
+        document.getElementById('heightVal').textContent = state.maxHeight.toFixed(1) + ' m';
+        setFeedback('');
+      }
+
+      function setFeedback(msg) {
+        const el = document.getElementById('feedback');
+        if (msg) el.textContent = msg;
+        else {
+          if (state.maxHeight > 25) el.textContent = 'It went high! (飞得好高！)';
+          else if (state.range > 45) el.textContent = 'It went far! (飞得好远！)';
+          else if (state.gravity > 15) el.textContent = 'Why did it drop so fast? (为什么掉得这么快？)';
+          else el.textContent = 'Nice launch! (发射得不错！)';
+        }
+      }
+
+      function spawnDust() {
+        for (let i = 0; i < 12; i++) {
+          const a = Math.PI * 0.5 + (Math.random() - 0.5) * Math.PI * 0.6;
+          const r = 2 + Math.random() * 4;
+          state.dustParticles.push({
+            x: state.range,
+            y: 0,
+            vx: Math.cos(a) * r,
+            vy: -Math.abs(Math.sin(a)) * r * 0.6,
+            life: 0.4 + Math.random() * 0.3,
+            size: 2 + Math.random() * 3
+          });
+        }
+      }
+
+      let pathIndex = 0;
+      let animEnded = false;
+
+      function animate() {
+        resize();
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+        skyGrad.addColorStop(0, '#87CEEB');
+        skyGrad.addColorStop(0.6, '#B0E0E6');
+        skyGrad.addColorStop(0.75, '#228B22');
+        skyGrad.addColorStop(1, '#1a5c1a');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        const groundY = world.groundY;
+        ctx.fillStyle = '#2E7D32';
+        ctx.fillRect(0, groundY, w, h - groundY);
+        ctx.fillStyle = '#388E3C';
+        ctx.fillRect(0, groundY, w, 8);
+
+        const ox = world.originX;
+        const oy = world.groundY;
+        ctx.fillStyle = '#8D6E63';
+        ctx.beginPath();
+        ctx.ellipse(ox - 4, oy, 14, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#5D4037';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(ox - 10, oy - 2);
+        ctx.lineTo(ox - 6, oy - 18);
+        ctx.lineTo(ox, oy - 20);
+        ctx.lineTo(ox + 6, oy - 18);
+        ctx.lineTo(ox + 10, oy - 2);
+        ctx.stroke();
+        ctx.fillStyle = '#A1887F';
+        ctx.fill();
+
+        if (state.ghostPath.length > 0) {
+          ctx.strokeStyle = 'rgba(100,100,100,0.35)';
+          ctx.setLineDash([6, 6]);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          const g0 = toCanvas(state.ghostPath[0].x, state.ghostPath[0].y);
+          ctx.moveTo(g0.cx, g0.cy);
+          for (let i = 1; i < state.ghostPath.length; i++) {
+            const g = toCanvas(state.ghostPath[i].x, state.ghostPath[i].y);
+            ctx.lineTo(g.cx, g.cy);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        const thetaRad = (state.angle * Math.PI) / 180;
+        const guideLen = state.speed * 0.9 * world.scale * 0.35;
+        ctx.strokeStyle = 'rgba(255,235,59,0.7)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + Math.cos(thetaRad) * guideLen, oy - Math.sin(thetaRad) * guideLen);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (state.path.length > 0) {
+          const drawUpTo = Math.min(pathIndex + 1, state.path.length);
+          ctx.strokeStyle = state.airResist ? 'rgba(255,152,0,0.9)' : 'rgba(255,235,59,0.95)';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = 'rgba(255,235,59,0.6)';
+          ctx.shadowBlur = 6;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          const p0 = toCanvas(state.path[0].x, state.path[0].y);
+          ctx.moveTo(p0.cx, p0.cy);
+          for (let i = 1; i < drawUpTo; i++) {
+            const p = toCanvas(state.path[i].x, state.path[i].y);
+            ctx.lineTo(p.cx, p.cy);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.shadowBlur = 0;
+
+          const current = state.path[Math.min(pathIndex, state.path.length - 1)];
+          const pos = toCanvas(current.x, current.y);
+          ctx.fillStyle = '#FF9800';
+          ctx.beginPath();
+          ctx.arc(pos.cx, pos.cy, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#E65100';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const landX = world.originX + state.range * world.scale;
+        if (state.path.length > 0 && !state.flying) {
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.beginPath();
+          ctx.moveTo(landX, groundY - 18);
+          ctx.lineTo(landX - 8, groundY);
+          ctx.lineTo(landX + 8, groundY);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#1B5E20';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        state.dustParticles.forEach(p => {
+          p.x += p.vx * 0.05;
+          p.y += p.vy * 0.05;
+          p.vy += 0.3 * 0.05;
+          p.life -= 0.016;
+        });
+        state.dustParticles = state.dustParticles.filter(p => p.life > 0);
+        state.dustParticles.forEach(p => {
+          const d = toCanvas(p.x, p.y);
+          ctx.fillStyle = `rgba(140,120,80,${p.life})`;
+          ctx.beginPath();
+          ctx.arc(d.cx, d.cy, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        if (state.airResist && state.path.length > 0) {
+          ctx.save();
+          ctx.globalAlpha = 0.4;
+          ctx.strokeStyle = '#78909C';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 5; i++) {
+            const cx = ox + 30 + i * 25 + Math.sin(Date.now() * 0.003 + i) * 3;
+            const cy = oy - 40 - i * 15;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + 12, cy);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        if (state.flying && state.path.length > 0) {
+          state.t += DT * VISUAL_TIME_SCALE;
+          const totalT = state.path[state.path.length - 1].t;
+          const progress = state.t / totalT;
+          pathIndex = Math.floor(progress * state.path.length);
+          pathIndex = Math.min(pathIndex, state.path.length - 1);
+          if (progress >= 1) {
+            state.flying = false;
+            state.landed = true;
+            spawnDust();
+            state.dustTime = 0.5;
+            state.showWhyHint = true;
+            setTimeout(function() {
+              const hint = document.getElementById('whyHint');
+              if (hint && state.showWhyHint) hint.style.display = 'block';
+            }, 800);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      document.getElementById('speed').addEventListener('input', function() {
+        state.speed = parseFloat(this.value);
+        document.getElementById('speedVal').textContent = state.speed;
+      });
+      document.getElementById('angle').addEventListener('input', function() {
+        state.angle = parseInt(this.value, 10);
+        document.getElementById('angleVal').textContent = state.angle;
+      });
+      document.getElementById('gravity').addEventListener('input', function() {
+        state.gravity = parseFloat(this.value);
+        document.getElementById('gravityVal').textContent = state.gravity.toFixed(1);
+      });
+      document.getElementById('airResist').addEventListener('change', function() {
+        state.airResist = this.checked;
+      });
+      document.getElementById('launchBtn').addEventListener('click', launch);
+      document.getElementById('presetLow').addEventListener('click', function() {
+        document.getElementById('speed').value = 28;
+        document.getElementById('angle').value = 15;
+        document.getElementById('speedVal').textContent = '28';
+        document.getElementById('angleVal').textContent = '15';
+        state.speed = 28;
+        state.angle = 15;
+      });
+      document.getElementById('presetHigh').addEventListener('click', function() {
+        document.getElementById('speed').value = 10;
+        document.getElementById('angle').value = 75;
+        document.getElementById('speedVal').textContent = '10';
+        document.getElementById('angleVal').textContent = '75';
+        state.speed = 10;
+        state.angle = 75;
+      });
+      document.getElementById('presetMoon').addEventListener('click', function() {
+        document.getElementById('gravity').value = 1.62;
+        document.getElementById('gravityVal').textContent = '1.6';
+        state.gravity = 1.62;
+      });
+
+      resize();
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
