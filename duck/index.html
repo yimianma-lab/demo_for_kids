@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Duck 🦆: Why Some Things Float (漂浮的鸭子：为什么有些东西会浮起来)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(180deg, #e8f4f8 0%, #d4e8f0 100%);
+      min-height: 100vh;
+      color: #2d5a6b;
+    }
+    h1 {
+      text-align: center;
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      margin: 0 0 8px 0;
+      color: #1a4a5c;
+    }
+    .subtitle { text-align: center; font-size: 0.9rem; margin-bottom: 12px; opacity: 0.9; }
+    .demo-area {
+      max-width: 520px;
+      margin: 0 auto 16px;
+      background: #fff8f0;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    #scene {
+      display: block;
+      width: 100%;
+      height: 220px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #87ceeb 0%, #b8e0f0 45%, #7eb8da 100%);
+    }
+    .feedback {
+      text-align: center;
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      font-weight: 600;
+      min-height: 2em;
+      margin: 10px 0;
+      color: #1a4a5c;
+    }
+    .controls {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .control-row label {
+      flex: 0 0 160px;
+      font-size: 0.95rem;
+      color: #2d5a6b;
+    }
+    input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #d4e8f0;
+      border-radius: 14px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffd54f, #ffb74d);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffd54f, #ffb74d);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    button {
+      min-height: 48px;
+      min-width: 120px;
+      padding: 12px 20px;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    button:active { transform: scale(0.97); }
+    #splashBtn {
+      background: linear-gradient(145deg, #4fc3f7, #29b6f6);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(41,182,246,0.4);
+    }
+    #splashBtn:hover { box-shadow: 0 6px 16px rgba(41,182,246,0.5); }
+    .preset {
+      background: #fff;
+      color: #2d5a6b;
+      border: 2px solid #b8e0f0;
+    }
+    .preset:hover { background: #e8f4f8; }
+    .science-row {
+      margin-top: 12px;
+      text-align: center;
+    }
+    .science-row label {
+      font-size: 0.85rem;
+      color: #5a7a8a;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #sciencePanel {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    #sciencePanel.visible { display: block; }
+    .hint {
+      position: absolute;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1a4a5c;
+      pointer-events: none;
+      animation: fadeUp 1.2s ease-out forwards;
+      text-shadow: 0 0 4px #fff;
+    }
+    @keyframes fadeUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-24px); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Floating Duck 🦆: Why Some Things Float</h1>
+  <p class="subtitle">漂浮的鸭子：为什么有些东西会浮起来</p>
+
+  <div class="demo-area">
+    <div style="position: relative;">
+      <canvas id="scene" width="488" height="220"></canvas>
+      <div id="hintContainer" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+    </div>
+    <div class="feedback" id="feedback">The duck floats! 🦆✨</div>
+
+    <div class="buttons">
+      <button id="splashBtn" type="button">SPLASH! 💦 (溅水！)</button>
+      <button class="preset" id="presetLight" type="button">🟢 Big & Light (大而轻)</button>
+      <button class="preset" id="presetHeavy" type="button">🔴 Small & Heavy (小而重)</button>
+      <button class="preset" id="presetTricky" type="button">🟡 Tricky Duck (狡猾的鸭子)</button>
+    </div>
+
+    <div class="controls">
+      <div class="control-row">
+        <label for="mass">How heavy is the duck? (鸭子有多重？) <span id="massVal">0.5</span> kg</label>
+        <input type="range" id="mass" min="0.1" max="2" step="0.05" value="0.5">
+      </div>
+      <div class="control-row">
+        <label for="volume">How big is the duck? (鸭子有多大？) <span id="volumeVal">0.8</span> L</label>
+        <input type="range" id="volume" min="0.2" max="2" step="0.05" value="0.8">
+      </div>
+      <div class="control-row">
+        <label for="salt">How salty is the water? (水有多咸？) <span id="saltVal">0</span> g/L</label>
+        <input type="range" id="salt" min="0" max="120" step="1" value="0">
+      </div>
+      <div class="control-row">
+        <label for="temp">How warm is the water? (水有多热？) <span id="tempVal">20</span> °C</label>
+        <input type="range" id="temp" min="0" max="60" step="1" value="20">
+      </div>
+    </div>
+
+    <div class="science-row">
+      <label><input type="checkbox" id="scienceMode"> Science mode (科学模式): show forces & density</label>
+    </div>
+    <div id="sciencePanel">
+      <div>Duck density (鸭子密度): <span id="rhoDuck">625</span> kg/m³</div>
+      <div>Water density (水的密度): <span id="rhoWater">1000</span> kg/m³</div>
+      <div>↑ Buoyancy (浮力) &nbsp; ↓ Weight (重力)</div>
+      <div style="margin-top:6px;font-size:0.85em;opacity:0.9;">Salt and temperature effects are small but real. (盐和温度的影响很小但真实存在。)</div>
+    </div>
+  </div>
+
+  <script>
+(function() {
+  const VISUAL_TIME_SCALE = 5;
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const feedbackEl = document.getElementById('feedback');
+  const hintContainer = document.getElementById('hintContainer');
+
+  let mass = 0.5, volume_L = 0.8, salt = 0, temp = 20;
+  let duckY = 0, duckVy = 0, duckX = 0.5;
+  let waterPhase = 0;
+  let splashPhase = 0;
+  let wigglePhase = 0;
+  let bubbles = [];
+  let ripples = [];
+  let droplets = [];
+  let lastSubmerged = 0.5;
+  let lastRhoObj = 500;
+  let lastFeedbackCategory = ''; // 'float' | 'almost' | 'sink'
+  let scienceMode = false;
+
+  const CANVAS_H = 220;
+  const WATER_LEVEL = 0.55;
+  const BOTTOM_Y = 0.92;
+  const DUCK_R = 0.12;
+  const DUCK_CX = 0.5;
+  const REFERENCE_VOLUME = 1.0; // L
+  const SALT_MAX = 120;
+  const TEMP_MAX = 60;
+
+  function getDuckSizeScale() {
+    return Math.max(0.6, Math.min(1.6, Math.cbrt(volume_L / REFERENCE_VOLUME)));
+  }
+
+  function volume_m3() { return volume_L * 0.001; }
+  function rho_object() { return mass / volume_m3(); }
+  function rho_water() {
+    let rho = 1000;
+    rho += salt * 0.75;
+    const t = temp;
+    if (t <= 4) rho += (4 - t) * 0.03;
+    else rho -= (t - 4) * 0.05;
+    return Math.max(980, Math.min(1100, rho));
+  }
+
+  function getSubmergedFraction() {
+    const ro = rho_object();
+    const rw = rho_water();
+    if (ro >= rw) return 1;
+    return ro / rw;
+  }
+
+  function getTargetY() {
+    const sub = getSubmergedFraction();
+    if (sub >= 1) return BOTTOM_Y;
+    const surfaceY_norm = WATER_LEVEL;
+    const sizeScale = getDuckSizeScale();
+    const duckRadiusPx = DUCK_R * sizeScale * Math.min(canvas.width, canvas.height);
+    const duckRadiusNorm = duckRadiusPx / CANVAS_H;
+    if (sub <= 0.5) {
+      return surfaceY_norm - duckRadiusNorm * (1 - 2 * sub);
+    }
+    return surfaceY_norm + (BOTTOM_Y - surfaceY_norm) * 2 * (sub - 0.5);
+  }
+
+  const springK = 0.18, damping = 0.88;
+  function stepDynamics(dt) {
+    const target = getTargetY();
+    const dy = target - duckY;
+    duckVy += dy * springK * dt;
+    duckVy *= damping;
+    duckY += duckVy * dt;
+    duckY = Math.max(0.1, Math.min(BOTTOM_Y, duckY));
+    if (Math.abs(dy) < 0.002 && Math.abs(duckVy) < 0.002) duckVy *= 0.9;
+  }
+
+  function getExpression() {
+    const sub = getSubmergedFraction();
+    if (sub >= 1) return 'surprised';
+    if (sub > 0.95) return 'worried';
+    return 'happy';
+  }
+
+  function showHint(text) {
+    const el = document.createElement('div');
+    el.className = 'hint';
+    el.textContent = text;
+    const rect = canvas.getBoundingClientRect();
+    el.style.left = (rect.width * 0.5 - 40) + 'px';
+    el.style.top = (rect.height * 0.4) + 'px';
+    hintContainer.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+
+  function getFeedbackCategory(sub) {
+    if (sub >= 1) return 'sink';
+    if (sub > 0.9) return 'almost';
+    return 'float';
+  }
+  function updateFeedback() {
+    const sub = getSubmergedFraction();
+    const cat = getFeedbackCategory(sub);
+    if (cat === lastFeedbackCategory) return;
+    lastFeedbackCategory = cat;
+    if (cat === 'sink') feedbackEl.textContent = "Uh oh… sinking! 😲 (哎呀…沉下去了！)";
+    else if (cat === 'almost') feedbackEl.textContent = "Almost floating… 🤔 (快要浮起来了…)";
+    else feedbackEl.textContent = "The duck floats! 🦆✨ (鸭子浮起来啦！)";
+  }
+
+  function drawWater() {
+    const w = canvas.width, h = canvas.height;
+    const surfaceY = WATER_LEVEL * h;
+    const saltNorm = Math.min(1, salt / SALT_MAX);
+    const tempNorm = Math.max(0, Math.min(1, (temp - 0) / (TEMP_MAX - 0)));
+    const waveSpeed = 0.04 * (1 - 0.25 * saltNorm) * (0.85 + 0.3 * tempNorm);
+    waterPhase += waveSpeed;
+    const waveAmp1 = 4 * (1 - 0.4 * saltNorm);
+    const waveAmp2 = 3 * (1 - 0.4 * saltNorm);
+    const waveFreq = 0.02 + 0.008 * tempNorm;
+    const waveFreq2 = 0.01 + 0.005 * tempNorm;
+
+    const r0 = 0x87 + saltNorm * 20, g0 = 0xce - saltNorm * 30, b0 = 0xeb - saltNorm * 25;
+    const r1 = 0xb8 - saltNorm * 15, g1 = 0xe0 - saltNorm * 25, b1 = 0xf0 - saltNorm * 20;
+    const r2 = 0x7e + saltNorm * 15, g2 = 0xb8 - saltNorm * 20, b2 = 0xda;
+    const r3 = 0x5a + saltNorm * 10, g3 = 0x9f - saltNorm * 15, b3 = 0xc4;
+    const coldShift = (1 - tempNorm) * 0.15;
+    const warmShift = tempNorm * 0.12;
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, '#' + [r0 + warmShift*40, g0 + warmShift*20, b0 + warmShift*30].map(c => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, '0')).join(''));
+    gradient.addColorStop(0.4, '#' + [r1 + warmShift*25, g1 + warmShift*15, b1 + warmShift*25].map(c => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, '0')).join(''));
+    gradient.addColorStop(0.6, '#' + [r2 - coldShift*20, g2 - coldShift*10, b2 + coldShift*15].map(c => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, '0')).join(''));
+    gradient.addColorStop(1, '#' + [r3 - coldShift*15, g3 - coldShift*8, b3 + coldShift*10].map(c => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, '0')).join(''));
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+    const surfaceAlpha = 0.85 - saltNorm * 0.1;
+    ctx.fillStyle = 'rgba(' + [r2, g2, b2].map(c => Math.round(c)).join(',') + ',' + surfaceAlpha + ')';
+    ctx.beginPath();
+    ctx.moveTo(0, surfaceY + 8);
+    for (let x = 0; x <= w + 20; x += 20) {
+      const y = surfaceY + Math.sin(x * waveFreq + waterPhase) * waveAmp1 + Math.sin(x * waveFreq2 + waterPhase * 0.7) * waveAmp2;
+      if (tempNorm > 0.5 && Math.random() < 0.02) {
+        ctx.lineTo(x, y - 2 - Math.random() * 3);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.lineTo(w + 20, h + 10);
+    ctx.lineTo(-10, h + 10);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawSplash() {
+    if (splashPhase <= 0) return;
+    const w = canvas.width, h = canvas.height;
+    const cx = DUCK_CX * w;
+    const sy = WATER_LEVEL * h;
+    const t = splashPhase;
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + t * 2;
+      const r = 15 + t * 25;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * r, sy - 5 + Math.sin(a) * r * 0.5, 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    splashPhase -= 0.06;
+    if (splashPhase < 0) splashPhase = 0;
+  }
+
+  function drawDroplets() {
+    droplets.forEach(d => {
+      d.y -= d.vy;
+      d.x += d.vx;
+      d.vy -= 0.3;
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    droplets = droplets.filter(d => d.y < canvas.height + 10);
+  }
+
+  function drawBubbles() {
+    const sub = getSubmergedFraction();
+    if (sub < 1) return;
+    const cx = DUCK_CX * canvas.width;
+    const by = duckY * canvas.height;
+    if (Math.random() < 0.4) {
+      bubbles.push({
+        x: cx + (Math.random() - 0.5) * 30,
+        y: by,
+        r: 4 + Math.random() * 4,
+        vy: -1.5 - Math.random() * 2
+      });
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    bubbles.forEach(b => {
+      b.y += b.vy;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    bubbles = bubbles.filter(b => b.y > -20);
+  }
+
+  function drawRipples() {
+    const sub = getSubmergedFraction();
+    if (sub >= 1) return;
+    const cx = DUCK_CX * canvas.width;
+    const dy = duckY * canvas.height;
+    if (Math.random() < 0.3) {
+      ripples.push({ x: cx + (Math.random() - 0.5) * 20, y: dy, r: 0 });
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1;
+    const saltNorm = Math.min(1, salt / SALT_MAX);
+    const rippleSpeed = 1.5 * (1 - 0.25 * saltNorm);
+    ripples.forEach(r => {
+      r.r += rippleSpeed;
+      if (r.r < 50) {
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.globalAlpha = 1 - r.r / 50;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    });
+    ripples = ripples.filter(r => r.r < 50);
+  }
+
+  function drawDuck() {
+    const w = canvas.width, h = canvas.height;
+    const cx = DUCK_CX * w;
+    let cy = duckY * h;
+    const sizeScale = getDuckSizeScale();
+    const r = DUCK_R * sizeScale * Math.min(w, h);
+    const wiggle = wigglePhase > 0 ? Math.sin(wigglePhase * 8) * 0.03 * r : 0;
+    wigglePhase -= 0.08;
+    if (wigglePhase < 0) wigglePhase = 0;
+
+    ctx.save();
+    ctx.translate(cx + wiggle, cy);
+
+    const expr = getExpression();
+
+    ctx.fillStyle = '#ffd54f';
+    ctx.strokeStyle = '#e6a800';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.1, r * 1.0, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff9800';
+    ctx.beginPath();
+    ctx.ellipse(r * 0.65, -r * 0.1, r * 0.4, r * 0.2, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#333';
+    if (expr === 'happy') {
+      ctx.beginPath();
+      ctx.arc(r * 0.35, -r * 0.35, r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(r * 0.38, -r * 0.38, r * 0.04, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+    } else if (expr === 'worried') {
+      ctx.beginPath();
+      ctx.moveTo(r * 0.25, -r * 0.35);
+      ctx.lineTo(r * 0.45, -r * 0.35);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(r * 0.35, -r * 0.32, r * 0.1, r * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(r * 0.35, -r * 0.35, r * 0.14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(r * 0.4, -r * 0.4, r * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+
+    if (scienceMode) {
+      const sy = WATER_LEVEL * h;
+      const arrowLen = 35;
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, cy - arrowLen);
+      ctx.stroke();
+      ctx.fillStyle = '#2e7d32';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('↑ Buoyancy (浮力)', cx + 8, cy - arrowLen * 0.5);
+      ctx.strokeStyle = '#c62828';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, cy + arrowLen);
+      ctx.stroke();
+      ctx.fillStyle = '#c62828';
+      ctx.fillText('↓ Weight (重力)', cx + 8, cy + arrowLen * 0.5 + 10);
+    }
+  }
+
+  function animate() {
+    const dt = 0.016 * VISUAL_TIME_SCALE;
+    stepDynamics(dt);
+    drawWater();
+    drawSplash();
+    drawDroplets();
+    drawBubbles();
+    drawRipples();
+    drawDuck();
+    updateFeedback();
+    requestAnimationFrame(animate);
+  }
+
+  function onParamsChange() {
+    const sub = getSubmergedFraction();
+    if (Math.abs(sub - lastSubmerged) > 0.02 || Math.abs(rho_object() - lastRhoObj) > 20) {
+      wigglePhase = 1.5;
+    }
+    lastSubmerged = sub;
+    lastRhoObj = rho_object();
+  }
+
+  document.getElementById('mass').oninput = function() {
+    mass = +this.value;
+    document.getElementById('massVal').textContent = mass;
+    showHint('Heavier... (更重了…)');
+    onParamsChange();
+  };
+  document.getElementById('volume').oninput = function() {
+    volume_L = +this.value;
+    document.getElementById('volumeVal').textContent = volume_L;
+    showHint('Bigger! (更大啦！)');
+    onParamsChange();
+  };
+  document.getElementById('salt').oninput = function() {
+    salt = +this.value;
+    document.getElementById('saltVal').textContent = salt;
+    showHint('Saltier water feels heavier! (更咸的水感觉更重！)');
+    onParamsChange();
+  };
+  document.getElementById('temp').oninput = function() {
+    temp = +this.value;
+    document.getElementById('tempVal').textContent = temp;
+    showHint('Warm water moves faster! (温水动得更快！)');
+    onParamsChange();
+  };
+
+  document.getElementById('splashBtn').onclick = function() {
+    duckVy = -0.08;
+    splashPhase = 1;
+    for (let i = 0; i < 12; i++) {
+      droplets.push({
+        x: DUCK_CX * canvas.width + (Math.random() - 0.5) * 40,
+        y: WATER_LEVEL * canvas.height - 10,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -4 - Math.random() * 6
+      });
+    }
+    waterPhase += 0.5;
+  };
+
+  document.getElementById('presetLight').onclick = function() {
+    mass = 0.3;
+    volume_L = 1.2;
+    salt = 0;
+    temp = 20;
+    applySliders();
+    showHint('Big & Light! (大而轻！)');
+    wigglePhase = 1.5;
+  };
+  document.getElementById('presetHeavy').onclick = function() {
+    mass = 1.5;
+    volume_L = 0.4;
+    salt = 0;
+    temp = 20;
+    applySliders();
+    showHint('Small & Heavy (小而重)');
+    wigglePhase = 1.5;
+  };
+  document.getElementById('presetTricky').onclick = function() {
+    mass = 0.95;
+    volume_L = 1.0;
+    salt = 5;
+    temp = 25;
+    applySliders();
+    showHint('Tricky Duck! (狡猾的鸭子！)');
+    wigglePhase = 1.5;
+  };
+
+  function applySliders() {
+    document.getElementById('mass').value = mass;
+    document.getElementById('massVal').textContent = mass;
+    document.getElementById('volume').value = volume_L;
+    document.getElementById('volumeVal').textContent = volume_L;
+    document.getElementById('salt').value = salt;
+    document.getElementById('saltVal').textContent = salt;
+    document.getElementById('temp').value = temp;
+    document.getElementById('tempVal').textContent = temp;
+    onParamsChange();
+  }
+
+  document.getElementById('scienceMode').onchange = function() {
+    scienceMode = this.checked;
+    document.getElementById('sciencePanel').classList.toggle('visible', scienceMode);
+  };
+
+  function updateSciencePanel() {
+    document.getElementById('rhoDuck').textContent = Math.round(rho_object());
+    document.getElementById('rhoWater').textContent = Math.round(rho_water());
+  }
+  setInterval(updateSciencePanel, 200);
+
+  duckY = getTargetY();
+  lastSubmerged = getSubmergedFraction();
+  lastRhoObj = rho_object();
+  lastFeedbackCategory = getFeedbackCategory(lastSubmerged);
+  feedbackEl.textContent = lastFeedbackCategory === 'sink' ? "Uh oh… sinking! 😲 (哎呀…沉下去了！)" : lastFeedbackCategory === 'almost' ? "Almost floating… 🤔 (快要浮起来了…)" : "The duck floats! 🦆✨ (鸭子浮起来啦！)";
+  animate();
+})();
+  </script>
+</body>
+</html>
