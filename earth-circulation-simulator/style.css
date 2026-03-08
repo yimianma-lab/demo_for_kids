@@ -1,0 +1,135 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  background: #1a1a2e;
+  color: #e8e8e8;
+  line-height: 1.5;
+}
+
+header {
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #a0a0b0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #16213e;
+  border-radius: 8px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.control-group input[type="range"] {
+  width: 120px;
+  accent-color: #4fc3f7;
+}
+
+.control-group span {
+  min-width: 2.5ch;
+  font-variant-numeric: tabular-nums;
+  color: #4fc3f7;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.buttons button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: #0f3460;
+  color: #e8e8e8;
+  cursor: pointer;
+}
+
+.buttons button:hover {
+  background: #1a4a7a;
+}
+
+.buttons button:active {
+  transform: scale(0.98);
+}
+
+#btn-particle {
+  background: #f9a825;
+  color: #1a1a2e;
+}
+
+#btn-particle:hover {
+  background: #ffb84d;
+}
+
+main {
+  margin-bottom: 1.5rem;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  border-radius: 8px;
+  background: #0d2137;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.explanation {
+  padding: 1rem;
+  background: #16213e;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.explanation h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+}
+
+.explanation ul {
+  margin: 0 0 0.75rem 0;
+  padding-left: 1.25rem;
+}
+
+.explanation li {
+  margin-bottom: 0.35rem;
+}
+
+.explanation p {
+  margin: 0;
+  color: #a0a0b0;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earth Circulation Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Earth Circulation Simulator</h1>
+    <p class="tagline">Latitudinal heating → pressure gradient → winds → Coriolis deflection → ocean currents → gyres</p>
+  </header>
+
+  <section class="controls">
+    <div class="control-group">
+      <label for="coriolis">Coriolis strength (0 = no rotation, 1 = Earth)</label>
+      <input type="range" id="coriolis" min="0" max="1" step="0.05" value="1">
+      <span id="coriolis-value">1.0</span>
+    </div>
+    <div class="control-group">
+      <label for="wind-forcing">Wind forcing strength</label>
+      <input type="range" id="wind-forcing" min="0.5" max="2" step="0.1" value="1">
+      <span id="wind-forcing-value">1.0</span>
+    </div>
+    <div class="control-group">
+      <label for="ocean-friction">Ocean friction</label>
+      <input type="range" id="ocean-friction" min="0.5" max="2" step="0.1" value="1">
+      <span id="ocean-friction-value">1.0</span>
+    </div>
+    <div class="buttons">
+      <button id="btn-play" type="button">Play</button>
+      <button id="btn-pause" type="button">Pause</button>
+      <button id="btn-reset" type="button">Reset</button>
+      <button id="btn-particle" type="button">Release Particle</button>
+    </div>
+  </section>
+
+  <main>
+    <canvas id="canvas" width="1000" height="500"></canvas>
+  </main>
+
+  <section class="explanation">
+    <h2>What you're seeing</h2>
+    <ul>
+      <li><strong>Trade winds</strong> — Equatorial heating creates a pressure gradient; winds flow toward the equator and are deflected by the Coriolis force (east in the tropics).</li>
+      <li><strong>Ocean currents</strong> — Wind stress drives surface currents; Coriolis deflects them, forming subtropical gyres (e.g. North Atlantic).</li>
+      <li><strong>Particles</strong> — Yellow trails show how water would move; try reducing Coriolis to see circulation weaken.</li>
+    </ul>
+    <p>This is a minimal educational model, not a full climate simulation. Land blocks flow and helps form basin-scale gyres.</p>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
